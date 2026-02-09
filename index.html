@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoring Visiting Kelas 2 - Persetujuan & Kesehatan</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --secondary: #64748b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg-light: #f8fafc;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+            --text-main: #1e293b;
+            --text-light: #64748b;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            line-height: 1.5;
+        }
+
+        /* --- Header & Navigation --- */
+        header {
+            background-color: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .brand-text h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .brand-text p {
+            font-size: 0.875rem;
+            color: var(--text-light);
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        select, input[type="text"] {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+            background-color: var(--surface);
+        }
+
+        select:focus, input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        /* --- Dashboard Stats --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            padding: 1.5rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            padding: 1.25rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-light);
+            margin-top: 0.25rem;
+        }
+
+        /* --- Main Content Table --- */
+        .main-container {
+            padding: 0 2rem 2rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .table-container {
+            background: var(--surface);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        thead {
+            background-color: #f1f5f9;
+        }
+
+        th {
+            text-align: left;
+            padding: 1rem;
+            font-weight: 600;
+            color: var(--text-main);
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background-color: #f8fafc;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-success { background-color: #dcfce7; color: #166534; }
+        .badge-danger { background-color: #fee2e2; color: #991b1b; }
+        .badge-warning { background-color: #fef3c7; color: #92400e; }
+        .badge-info { background-color: #e0f2fe; color: #075985; }
+        .badge-gray { background-color: #f3f4f6; color: #374151; }
+
+        .btn {
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+        }
+
+        .btn-outline:hover {
+            background-color: #f1f5f9;
+        }
+
+        /* --- Modal --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(2px);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background-color: var(--surface);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+        }
+
+        .modal-header h2 {
+            font-size: 1.25rem;
+            color: var(--text-main);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .detail-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .detail-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-light);
+            font-weight: 600;
+            margin-bottom: 0.35rem;
+        }
+
+        .detail-value {
+            font-size: 0.95rem;
+            color: var(--text-main);
+            background: #f8fafc;
+            padding: 0.75rem;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+        
+        .detail-value.empty {
+            font-style: italic;
+            color: #94a3b8;
+            background: transparent;
+            border: 1px dashed var(--border);
+        }
+
+        .alert-box {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            display: flex;
+            gap: 0.5rem;
+            align-items: flex-start;
+        }
+
+        .alert-warning {
+            background-color: #fffbeb;
+            border: 1px solid #fcd34d;
+            color: #92400e;
+        }
+
+        .alert-danger {
+            background-color: #fef2f2;
+            border: 1px solid #fca5a5;
+            color: #991b1b;
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .controls {
+                flex-direction: column;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-content">
+            <div class="brand">
+                <div class="brand-icon">2</div>
+                <div class="brand-text">
+                    <h1>Visiting Kelas 2</h1>
+                    <p>Form Persetujuan & Kesehatan Siswa</p>
+                </div>
+            </div>
+            <div class="controls">
+                <input type="text" id="searchInput" placeholder="Cari Nama Siswa atau Kelas..." onkeyup="handleSearch()">
+                <select id="pakFilter" onchange="handleFilter()">
+                    <option value="ALL">Semua Guru PAK</option>
+                    <!-- Options populated by JS -->
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-value" id="statTotal">0</span>
+            <span class="stat-label">Total Siswa</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value" id="statAllowed" style="color: var(--success)">0</span>
+            <span class="stat-label">Diizinkan</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value" id="statDenied" style="color: var(--danger)">0</span>
+            <span class="stat-label">Tidak Diizinkan</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value" id="statSick" style="color: var(--warning)">0</span>
+            <span class="stat-label">Ada Gejala Sakit</span>
+        </div>
+    </div>
+
+    <main class="main-container">
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Kelas</th>
+                        <th>Nama Siswa</th>
+                        <th>Guru PAK</th>
+                        <th>Izin Ortu</th>
+                        <th>Gejala 7 Hari Terakhir</th>
+                        <th>Alergi</th>
+                        <th>Kondisi Khusus</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="studentTableBody">
+                    <!-- Rows populated by JS -->
+                </tbody>
+            </table>
+        </div>
+        <div style="padding: 1rem; text-align: center; color: var(--text-light); font-size: 0.9rem;">
+            Menampilkan <span id="showingCount">0</span> data
+        </div>
+    </main>
+
+    <!-- Modal Detail -->
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modalTitle">Detail Siswa</h2>
+                <button class="close-modal" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalContent">
+                <!-- Content populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATASET (Diambil dari file Excel pengguna) ---
+        const rawData = [
+            {id: 0, cls: "2A", name: "MARYAM AL MAQDISIAH", pak: "4. Bu Srimel", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: null, condition: null, motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: null, foodRestriction: null, genericMeds: "Ya, diizinkan", message: null},
+            {id: 1, cls: "2A", name: "YUMNA HUMAIRA AZ - ZAHRA", pak: "5. Bu Iin", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Ya (Saya akan memberikan obat sebelum berangkat)", meds: "Tidak ada obat rutin", medToTeacher: "tidak ada", genericMeds: "Ya, diizinkan", message: null},
+            {id: 2, cls: "2E", name: "ISAURA JULIA SALAMAH", pak: "7. Bu Elah", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Alergi Debu / Udara Dingin (Asma)", allergyDetail: "Alergi udara kotor/asap", condition: "Asma", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "-", genericMeds: "Ya, diizinkan", message: "Kalau asma, mohon dingatkan untuk istirahat, banyak minum, dan dioles dadanya pakai minyak hangat"},
+            {id: 3, cls: "2D", name: "ABDURRAHMAN RAIHAN RIADI", pak: "11. Pak Aris Ismail", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Tidak memiliki alergi", allergyDetail: null, condition: null, motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: null, genericMeds: "Ya, diizinkan", message: null},
+            {id: 4, cls: "2F", name: "HAFA SHAFIYYAH", pak: "8. Bu Lina", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Ya (Saya akan memberikan obat sebelum berangkat)", meds: "Tidak ada obat rutin", medToTeacher: "-", genericMeds: "Tidak, harap hubungi saya terlebih dahulu", message: "-"},
+            {id: 5, cls: "2A", name: "RAFA ELANO ATHALLASYAH", pak: "11. Pak Aris Ismail", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Alergi Makanan (misal: Kacang, Seafood, Telur)", allergyDetail: "Alergi Udang", condition: "Tidak Ada", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak ada", genericMeds: "Ya, diizinkan", message: null},
+            {id: 6, cls: "2B", name: "FATHIYA AMANY SYAIMA", pak: "7. Bu Elah", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: null, condition: null, motionSickness: "Ya (Mohon bawa kantong plastik/obat antisipasi dari sekolah)", meds: "Tidak ada obat rutin", medToTeacher: null, genericMeds: "Ya, diizinkan", message: null},
+            {id: 7, cls: "2C", name: "M NAZRIL ARROFI", pak: "9. Pak Ridho dan Pak Abdurrahman", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "Titip ananda ya pak,mohon di ingatkan minum air putih,syukron pak", condition: null, motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: null, genericMeds: "Ya, diizinkan", message: "Titip ananda ya pak,mohon di ingatkan minum air putih,syukron pak/ibu"},
+            {id: 8, cls: "2F", name: "SALSABILA AZIZAH", pak: "6. Bu Zaitun", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "Tidak ada", condition: "Tidak ada", motionSickness: "Ya (Saya akan memberikan obat sebelum berangkat)", meds: "Tidak ada obat rutin", medToTeacher: "Tidak ada", genericMeds: "Ya, diizinkan", message: "Selama diperjalanan....biasanya Sabil hirup minyak kayu putih"},
+            {id: 9, cls: "2A", name: "FAZIAN AQMAR SUBHAN", pak: "9. Pak Ridho dan Pak Abdurrahman", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "tidak", genericMeds: "Ya, diizinkan", message: null},
+            {id: 10, cls: "2E", name: "BINTANG ATHAYA HAUFANHAZZA SUBROTO", pak: "10. Pak Heri", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Lainnya", allergyDetail: "jika udara terlalu dingin jadi flu..tapi tidak sesak", condition: "-", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "tidak", genericMeds: "Ya, diizinkan", message: "tidak ada"},
+            {id: 11, cls: "2E", name: "RANAYA AZZAHRA WIBOWO", pak: "2. Bu Asiyah dan Bu Riyanti", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Alergi Debu / Udara Dingin (Asma)", allergyDetail: "ranaya ada asma tp hanya kambuh ketika dia sedang bapil dan terlalu kelelahan. kalau sedang fit insyaa Allah aman. kalau sedang kambuh asma nya tidak boleh terkena asap rokok, debu atau terlalu kedinginan.", condition: "asma", motionSickness: "Ya (Mohon bawa kantong plastik/obat antisipasi dari sekolah)", meds: "Tidak ada obat rutin", medToTeacher: "tidak bisa pedas (baik itu cabai ataupun merica)", genericMeds: "Ya, diizinkan", message: "ranaya memang kalau naik mobil selalu tidur krna suka pusing / mabuk perjalanan. afwan kalau bisa tlg diberikan kursi di mobil yg duduknya menghadap ke depan (jalan). tp biasanya tidak sampai saya berikan obat mabuk perjalanan (antimo) kok bu, hanya saya biarkan dia tidur saja. terima kasih 🙏"},
+            {id: 12, cls: "2E", name: "MUHAMMAD IZZ IBADURRAHMAN AL HANAN", pak: "12. Pak Widodo", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: null, condition: null, motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: null, genericMeds: "Tidak, harap hubungi saya terlebih dahulu", message: null},
+            {id: 13, cls: "2E", name: "MUHAMMAD SALMAN ALFARIZI", pak: "12. Pak Widodo", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Tidak memiliki alergi", allergyDetail: "Tidak ada alergi", condition: "Tidak ada", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak", genericMeds: "Ya, diizinkan", message: "Izin titip Ananda Bapak / Ibh guru Terimakasih"},
+            {id: 14, cls: "2C", name: "DHIAU MUHAMMAD QUTBY HIBRIZI", pak: "14. Pak Nana", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Tidak memiliki alergi", allergyDetail: "Hanya dingin yg ekstrim.. bisa pilek batuk..", condition: "Tidak ada", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak", genericMeds: "Ya, diizinkan", message: null},
+            {id: 15, cls: "2D", name: "AFSHEENA FAZIA SYARIF", pak: "8. Bu Lina", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Alergi Debu / Udara Dingin (Asma)", allergyDetail: "Bersin-bersin terus menerus, meler, hingga batuk", condition: "Asma", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak", genericMeds: "Ya, diizinkan", message: "Tidak ada"},
+            {id: 16, cls: "2D", name: "HANFIA NAZIHA MUMTAZAH", pak: "2. Bu Asiyah dan Bu Riyanti", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Tidak memiliki alergi", allergyDetail: "Tidak ada", condition: "Tidak ada", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak ada", genericMeds: "Ya, diizinkan", message: "Utk mengingatkan ananda, minun air putih yg rutin"},
+            {id: 17, cls: "2C", name: "NADIA ALYSSA MARYAM MUMTAZAH", pak: "6. Bu Zaitun", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "-", genericMeds: "Ya, diizinkan", message: "-"},
+            {id: 18, cls: "2B", name: "FATHAN AKBAR FIRDAUS PRAWIRA", pak: "15. Pak Chandra", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Alergi Debu / Udara Dingin (Asma)", allergyDetail: "Batuk.", condition: ".", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak", genericMeds: "Ya, diizinkan", message: "."},
+            {id: 19, cls: "2B", name: "MUHAMMAD RAIZEL ARRIFY EL HADI", pak: "10. Pak Heri", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: null, motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "-", genericMeds: "Ya, diizinkan", message: "Ananda akan saya bawakan tolak angin, mohon diberikan setelah makan siang apabila ada kegiatan bermain air. Terima kasih 🙏"},
+            {id: 20, cls: "2D", name: "ADZKIA HAYFA SYAHIRA", pak: "8. Bu Lina", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Alergi Debu / Udara Dingin (Asma)", allergyDetail: "Alergi dingin. Perlu diperhatikan jika ananda mulai terlihat bernafas sesak, karena mengarah ke asma. Untuk alergi debu, hanya menyebabkan gatal di kulit dan kepala (dermatitis/eksim)", condition: "Asma", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak ada, tapi diusahakan tidak sering makan makanan seperti coklat", genericMeds: "Ya, diizinkan", message: "Jika ananda terlihat sesak nafas, mohon ananda diingatkan untuk istirahat dan tidak berkegiatan dulu"},
+            {id: 21, cls: "2C", name: "MUHAMMAD ATTAKI ZAIN", pak: "9. Pak Ridho dan Pak Abdurrahman", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: null, condition: null, motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: null, genericMeds: "Ya, diizinkan", message: null},
+            {id: 22, cls: "2C", name: "TANIA SYAQILLA ADANNADI", pak: "8. Bu Lina", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak boleh coklat", genericMeds: "Ya, diizinkan", message: "Tidak ada instruksi khusus. Mohon ananda tetap didampingi dan diawasi selama kegiatan berlangsung. Terima kasih"},
+            {id: 23, cls: "2C", name: "HARUMI NANDARA SAHWAHITA", pak: "4. Bu Srimel", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: null, motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: null, genericMeds: "Ya, diizinkan", message: null},
+            {id: 24, cls: "2D", name: "RIFDA QONITA KHAIRA AS SYIFA", pak: "3. Bu Maya", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Lainnya", allergyDetail: "-", condition: "-", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak ada", genericMeds: "Ya, diizinkan", message: "Mengingatkan untuk minum air putih"},
+            {id: 25, cls: "2C", name: "KHAIRAN HIFDZI LUTHFY", pak: "14. Pak Nana", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Alergi Debu / Udara Dingin (Asma)", allergyDetail: "debu", condition: "tidak ada", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "tidak makan udang karena alergi", genericMeds: "Tidak, harap hubungi saya terlebih dahulu", message: "mohon pengawasan & pendampingannya, terima kasih Bapak Guru 🙏"},
+            {id: 26, cls: "2C", name: "MUHAMMAD ALI IVANDIEN", pak: "14. Pak Nana", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Tidak memiliki alergi", allergyDetail: null, condition: null, motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak makan coklat dan stroberi.. khawatir batuk lg..", genericMeds: "Ya, diizinkan", message: "Mohon utk ali diingatkan saja bila terlalu aktif gerak terus, minta tolong diingatkan utk istirahat sebentar, minum air putih. Supaya tdk kecapean pak. Krn biasanya suka tidak istirahat apabila tdk diingatkan. Trmksh byk sebelumnya.."},
+            {id: 27, cls: "2B", name: "RASYID ANGGARA SYAMAN SHOLEH", pak: "12. Pak Widodo", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "Tidak ada", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak ada", genericMeds: "Ya, diizinkan", message: "Rasyid kadang2 sering bengong aja, pastikan dia tidak tertinggal rombongan saja terima kasih"},
+            {id: 28, cls: "2D", name: "HAFIZH PRAWIRA", pak: "11. Pak Aris Ismail", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "Tidak", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak kuat makanan pedas", genericMeds: "Ya, diizinkan", message: null},
+            {id: 29, cls: "2F", name: "MUHAMMAD BRAWIRA RADINKA", pak: "14. Pak Nana", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "Bbrp hari lalu kaki bengkak, keseleo", motionSickness: "Tidak", meds: "Ya, obat akan saya serahkan ke guru (diberi label nama)", medToTeacher: "-", genericMeds: "Ya, diizinkan", message: "Obat2 Barr nnti Insyaa Allah saya siapkan di tas ananda takut sewaktu2 dibutuhkan"},
+            {id: 30, cls: "2A", name: "AZKA QIANU FAZA", pak: "13. Pak Sucipto dan Pak Yusuf Supriadi", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Alergi Makanan (misal: Kacang, Seafood, Telur), Alergi Debu / Udara Dingin (Asma)", allergyDetail: "Alergi seafood dan alergi dingin", condition: "Tidak ada", motionSickness: null, meds: "Tidak ada obat rutin", medToTeacher: "Tidak ada", genericMeds: "Tidak, harap hubungi saya terlebih dahulu", message: "Tidak ada catatan khusus selain alergi seafood & alergi dingin yang berlebihan"},
+            {id: 31, cls: "2B", name: "YUMNA ALEA FIRDAUS", pak: "1. Bu Nurul", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "Tidak ada", condition: "Tidak ada", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak", genericMeds: "Ya, diizinkan", message: "Tidak telat makan, karena ananda suka sakit perut jika terlambat makan"},
+            {id: 32, cls: "2F", name: "ANNASYA SYIFFA YULIANA", pak: "6. Bu Zaitun", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Alergi Makanan (misal: Kacang, Seafood, Telur), Alergi Debu / Udara Dingin (Asma)", allergyDetail: "Susu, coklat, gula biang, permen, minuman berwarna", condition: "Tidak", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak", genericMeds: "Ya, diizinkan", message: "Tidak ada"},
+            {id: 33, cls: "2C", name: "ELVYRA SIENNA PUTRI", pak: "4. Bu Srimel", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Tidak memiliki alergi", allergyDetail: "Tidak ada", condition: "Tidak ada", motionSickness: "Tidak", meds: "Ya, obat akan saya serahkan ke guru (diberi label nama)", medToTeacher: "Tidak ada", genericMeds: "Ya, diizinkan", message: "Elvyra kelas 2c sedang batuk dan flu tapi tidak parah.biasanya setiap pagi sebelum sekolah sudah minum obat dari rumah.tapi nanti saya bawakan ke pada guru pembimbing obat flu dan batuk untuk di minum jam 12.00.terimaksih sebelumnya, 🙏🙏"},
+            {id: 34, cls: "2C", name: "QIANDRA ELMYRA SHANUM", pak: "8. Bu Lina", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Lainnya", allergyDetail: "Alergi dingin tapi tidak asma hanya pilek batuk biasa", condition: "Tidak ada", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Belum bisa makan pedas", genericMeds: "Ya, diizinkan", message: null},
+            {id: 35, cls: "2B", name: "FITRIA ALINA", pak: "7. Bu Elah", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Alergi Debu / Udara Dingin (Asma)", allergyDetail: "Debu dan dingin = batuk dan sesak nafas", condition: "Asma", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak ada", genericMeds: "Ya, diizinkan", message: "Jila batuk mohon untuk dioleskan minyak kayu putih"},
+            {id: 36, cls: "2D", name: "GANESHA FATHARIAN ARGARAMA", pak: "11. Pak Aris Ismail", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "Tidak", condition: "Tidak", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak pedas dan tidak ikan", genericMeds: "Tidak, harap hubungi saya terlebih dahulu", message: "Tidak ada"},
+            {id: 37, cls: "2F", name: "ATHIYA ZAHRA KAMALIA", pak: "6. Bu Zaitun", permission: "Ya, Saya mengizinkan", symptoms: "Demam (Suhu > 37.5°C)", allergy: "Alergi Debu / Udara Dingin (Asma)", allergyDetail: "Alergi kulit, suka muncul bintik kecil2 dan kadang gatal", condition: "Tidak", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Sebaiknya dihindari makanan pedas karena suka ngaruh ke amandelnya tapi anaknya juga ga terlalu suka pedas (pake pedas tapi sedikit)", genericMeds: "Ya, diizinkan", message: "Ketika perjalanan di mobil biasanya suka pusing atau mual (tapi ga pernah muntah). Biasanya pusing atau mual karena bau AC mobil. Biasanya disiasati dengan menghirup fresh care. Nanti dibawain fresh carenya. Atau anaknya suruh tidur aja selama perjalanan biar teralihkan."},
+            {id: 38, cls: "2D", name: "SOFIA FARHAT ALBAKRI", pak: "5. Bu Iin", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Tidak memiliki alergi", allergyDetail: null, condition: null, motionSickness: "Ya (Mohon bawa kantong plastik/obat antisipasi dari sekolah)", meds: "Tidak ada obat rutin", medToTeacher: null, genericMeds: "Ya, diizinkan", message: null},
+            {id: 39, cls: "2B", name: "GHANI ALTHAF KAISAN", pak: "15. Pak Chandra", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: ".", condition: ".", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak bisa makan pedas meskipun sedikit", genericMeds: "Ya, diizinkan", message: "."},
+            {id: 40, cls: "2D", name: "ILARIO ATHAYA RAFFASYA JAYANEGARA", pak: "13. Pak Sucipto dan Pak Yusuf Supriadi", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Lainnya", allergyDetail: "Kadang makan/minum coklat suka keluar bentol seperti kaligata, kami bawakan obat kaligatanya", condition: "Tidak", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak", genericMeds: "Ya, diizinkan", message: null},
+            {id: 41, cls: "2B", name: "SYARIFAH NURUL IZZAH", pak: "1. Bu Nurul", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Lainnya", allergyDetail: "Ketika kepanasan, tiba2 mimisan dan keluar cairan krntal dari telinga", condition: "Suka tiba2 mimisan", motionSickness: "Ya (Mohon bawa kantong plastik/obat antisipasi dari sekolah)", meds: "Tidak ada obat rutin", medToTeacher: "Tidak ada", genericMeds: "Ya, diizinkan", message: "Karena Rifa suka mabuk perjalanan, mohon bisa duduk di depan ketika di kendaraan."},
+            {id: 42, cls: "2E", name: "DZAKY AHMAD ARRAZI", pak: "10. Pak Heri", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Tidak memiliki alergi", allergyDetail: null, condition: null, motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: null, genericMeds: "Ya, diizinkan", message: null},
+            {id: 43, cls: "2C", name: "MUHAMMAD ATHAYA IBROHIM", pak: "14. Pak Nana", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "Tidak ada", condition: "Tidak ada", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak ada", genericMeds: "Ya, diizinkan", message: null},
+            {id: 44, cls: "2E", name: "NADHIRA ASHLEY MISEL", pak: "2. Bu Asiyah dan Bu Riyanti", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "-", genericMeds: "Tidak, harap hubungi saya terlebih dahulu", message: null},
+            {id: 45, cls: "2C", name: "ASSYIFA SHABIRA AZZAHRA", pak: "4. Bu Srimel", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Lainnya", allergyDetail: "Mimisan", condition: "Mimisan", motionSickness: "Tidak", meds: "Ya, obat akan saya serahkan ke guru (diberi label nama)", medToTeacher: "Tidak", genericMeds: "Ya, diizinkan", message: "Mohon untuk memberikan obat bapil jk ananda sedang bapil"},
+            {id: 46, cls: "2D", name: "SEIRA AQILA PUTRI ASWIDINNOOR", pak: "3. Bu Maya", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Ya (Saya akan memberikan obat sebelum berangkat)", meds: "Tidak ada obat rutin", medToTeacher: null, genericMeds: "Ya, diizinkan", message: "kalau di mobil sebaiknya posisi duduk ananda menghadap jalan depan"},
+            {id: 47, cls: "2C", name: "ALDEBARAN MUHAMMAD MARPAUNG", pak: "12. Pak Widodo", permission: "Ya, Saya mengizinkan", symptoms: "Demam (Suhu > 37.5°C), Batuk / Pilek, Diare / Muntah", allergy: "Alergi Debu / Udara Dingin (Asma)", allergyDetail: "Alergi dingin, jika sedang kambuh akan sering terbatuk krn sesak nafasnya", condition: "Asma krn alergi dingin", motionSickness: "Ya (Mohon bawa kantong plastik/obat antisipasi dari sekolah)", meds: "Tidak ada obat rutin", medToTeacher: "Tidak boleh pedas dan kenyal (preferensi ananda)", genericMeds: "Ya, diizinkan", message: "Mohon diinfokan jika ananda demam atau muntah kembali selama kegiatan visiting, mohon kesabaran guru PAK untuk mengingatkan ananda agar menghabiskan makanannya, terima kasih"},
+            {id: 48, cls: "2B", name: "KEANE GIBRAN AL ZAHRAN", pak: "15. Pak Chandra", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Alergi Makanan (misal: Kacang, Seafood, Telur)", allergyDetail: "Alergi udang/ seafood : gatel”, bibir bengkak.", condition: "Gejala asma", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "-", genericMeds: "Ya, diizinkan", message: null},
+            {id: 49, cls: "2C", name: "AMRU RAYYANKA AKBAR", pak: "12. Pak Widodo", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "Tidak ada", condition: "Tidak ada", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak ada", genericMeds: "Ya, diizinkan", message: "Tolong diingatkan untuk ke toilet karena sering tahan BAK pak/bu"},
+            {id: 50, cls: "2C", name: "MUHAMMAD ALTHARAFISQI", pak: "9. Pak Ridho dan Pak Abdurrahman", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Alergi Debu / Udara Dingin (Asma)", allergyDetail: "Bersin bersin", condition: "Tidak ada", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: null, genericMeds: "Ya, diizinkan", message: null},
+            {id: 51, cls: "2F", name: "IBRAHIM ZAVIER UHUD", pak: "14. Pak Nana", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "-", genericMeds: "Ya, diizinkan", message: "-"},
+            {id: 52, cls: "2C", name: "ARSYLLA ZYANA HERYADI", pak: "4. Bu Srimel", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: null, condition: null, motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: null, genericMeds: "Ya, diizinkan", message: null},
+            {id: 53, cls: "2D", name: "MUHAMMAD HAUFANHAZZA RAMADHAN", pak: "13. Pak Sucipto dan Pak Yusuf Supriadi", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "-", genericMeds: "Tidak, harap hubungi saya terlebih dahulu", message: "lebih sering di intruksikan untuk minum air putih. dan bisa doberikan"},
+            {id: 54, cls: "2E", name: "SITI HAFSHAH AHDIYATUNNISA", pak: "4. Bu Srimel", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Alergi Debu / Udara Dingin (Asma)", allergyDetail: "Alergi dingin, jika terjadi bersin2 kadang keluar bentol2 D badan", condition: "-", motionSickness: "Ya (Mohon bawa kantong plastik/obat antisipasi dari sekolah)", meds: null, medToTeacher: "Ya tdk boleh makan makann pedas karena ada sakit lambung jg", genericMeds: "Ya, diizinkan", message: "Titip ananda saja smoga smua sehat2 dan tdk terjdi yg tdk D inginkan ☺🙏"},
+            {id: 55, cls: "2D", name: "ATHALLAH SHAIL AR RAASYID", pak: "11. Pak Aris Ismail", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: null, condition: null, motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: null, genericMeds: "Ya, diizinkan", message: "Menjaga dengan sepenuh hati awasi dan membimbing dengan baik hatur nuhun"},
+            {id: 56, cls: "2B", name: "KEISHA ZHAFIRA NISRINA", pak: "7. Bu Elah", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "-", genericMeds: "Ya, diizinkan", message: null},
+            {id: 57, cls: "2F", name: "RAISA ALMAHYRA ARYASA", pak: "5. Bu Iin", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Tidak memiliki alergi, Alergi Debu / Udara Dingin (Asma)", allergyDetail: "-", condition: "-", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak", genericMeds: "Ya, diizinkan", message: "-"},
+            {id: 58, cls: "2D", name: "ZAHRA ALFATHUNISA", pak: "5. Bu Iin", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "-", genericMeds: "Ya, diizinkan", message: "Ananda kalo terlalu cape atau kepanasan suka mimisan"},
+            {id: 59, cls: "2F", name: "ABIZARD KHALID QIANNA RAHMADI", pak: "12. Pak Widodo", permission: "Ya, Saya mengizinkan", symptoms: "Diare / Muntah", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "-", genericMeds: "Ya, diizinkan", message: "Mohon diingatkan ananda sudah BAK atau blm khawatir ditahan"},
+            {id: 60, cls: "2F", name: "ALFASHA ALVERO PANDU SEMBIRING MILALA", pak: "14. Pak Nana", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "-", genericMeds: "Ya, diizinkan", message: "-"},
+            {id: 61, cls: "2C", name: "LUTHFIA DZAKIRA KHOIRUNNISA", pak: "6. Bu Zaitun", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "Tidak ada", condition: "Tidak ada", motionSickness: "Ya (Saya akan memberikan obat sebelum berangkat)", meds: "Tidak ada obat rutin", medToTeacher: "Tidak ada", genericMeds: "Ya, diizinkan", message: null},
+            {id: 62, cls: "2E", name: "NISRINA ADIFA SHOLIHAT", pak: "2. Bu Asiyah dan Bu Riyanti", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: null, condition: null, motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak ada", genericMeds: "Ya, diizinkan", message: "Tolong diingatkan lg ttg aturan yg harus dilakukan sblm, selama, dan sesudah visiting"},
+            {id: 63, cls: "2C", name: "ADZKIYA YUMNA HUMAIRA", pak: "4. Bu Srimel", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Alergi Makanan (misal: Kacang, Seafood, Telur)", allergyDetail: "Alergi coklat, strawberry, tidak makan roti, bakpau, bolu (yang mengandung gluten dan zat pengembang)", condition: null, motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: null, genericMeds: "Tidak, harap hubungi saya terlebih dahulu", message: "Mohon untuk selalu bersama sama dalam 1 grup"},
+            {id: 64, cls: "2C", name: "REINNA CETTA REKSATMAJA", pak: "8. Bu Lina", permission: "Ya, Saya mengizinkan", symptoms: "Demam (Suhu > 37.5°C)", allergy: "Alergi Makanan (misal: Kacang, Seafood, Telur)", allergyDetail: "Alergi makanan ice cream , amandel membengkak", condition: "Tidak", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak makan ice cream", genericMeds: "Ya, diizinkan", message: null},
+            {id: 65, cls: "2C", name: "PUTRI RAMSHA NASYAUQI", pak: "6. Bu Zaitun", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "Tidak ada", condition: "T8dak", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak", genericMeds: "Ya, diizinkan", message: "Insya Allah sehat selamat semua"},
+            {id: 66, cls: "2D", name: "ALBANIA AUBREE MUSTHAFAA", pak: "2. Bu Asiyah dan Bu Riyanti", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Tidak memiliki alergi", allergyDetail: null, condition: null, motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: null, genericMeds: "Ya, diizinkan", message: null},
+            {id: 67, cls: "2E", name: "SAFINA AULIA FATIHAH", pak: "4. Bu Srimel", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: null, condition: null, motionSickness: null, meds: "Tidak ada obat rutin", medToTeacher: "Tidak", genericMeds: "Ya, diizinkan", message: null},
+            {id: 68, cls: "2D", name: "SARAH ALMIRA", pak: "3. Bu Maya", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Alergi Makanan (misal: Kacang, Seafood, Telur), Alergi Debu / Udara Dingin (Asma)", allergyDetail: null, condition: null, motionSickness: "Tidak", meds: null, medToTeacher: null, genericMeds: "Tidak, harap hubungi saya terlebih dahulu", message: null},
+            {id: 69, cls: "2D", name: "SHEREN FATIMAH SHABIRA", pak: "5. Bu Iin", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: null, condition: null, motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: null, genericMeds: "Ya, diizinkan", message: null},
+            {id: 70, cls: "2D", name: "RASHDAN KHALIF PERMADI", pak: "15. Pak Chandra", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Ya (Mohon bawa kantong plastik/obat antisipasi dari sekolah)", meds: "Tidak ada obat rutin", medToTeacher: "Tidak", genericMeds: "Ya, diizinkan", message: "Mohon ananda diprioritaskan untuk duduk di depan saat berkendara karena ananda mual/muntah jika duduk di belakang."},
+            {id: 71, cls: "2A", name: "HAFIDZAH NURHASANAH", pak: "1. Bu Nurul", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "Tidak", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak", genericMeds: "Ya, diizinkan", message: "Mohon segera menghubungi jika ada kondisi darurat"},
+            {id: 72, cls: "2D", name: "SALIMAH NUR SA'ADAH", pak: "3. Bu Maya", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "Tidak ada", motionSickness: "Tidak", meds: "Tidak, saya akan mengaturnya sendiri", medToTeacher: "Tidak", genericMeds: "Ya, diizinkan", message: "Salimah lg perawatan gigi...kemarin jumat baru tambal gigi smntara krn bolong...jk salimah merasa sakit gigi nya, bisa tolong dibantu berikan paracetamol ½ tablet sj...Hturnhun"},
+            {id: 73, cls: "2D", name: "FADHLULLAH ABDURRAHMAN ROSYIDI", pak: "11. Pak Aris Ismail", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Lainnya", allergyDetail: "-", condition: "Perforasi membran timfani (Gendang telinga kanan tidak tertutup selaput, gendang telinga kiri hanya sedikit tertutup selaput) *Kedua telinga, Tidak boleh sampai kemasukan air*", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak", genericMeds: "Ya, diizinkan", message: "Jika ada kegiatan bermain air, Titip ananda jangan sampai telinga nya kemasukan air"},
+            {id: 74, cls: "2F", name: "UNAISAH NUSAIBAH", pak: "1. Bu Nurul", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek, Sakit Tenggorokan", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "Tidak ada", motionSickness: "Tidak", meds: "Ya, obat akan saya serahkan ke guru (diberi label nama)", medToTeacher: "Tidak bisa pedas", genericMeds: "Ya, diizinkan", message: "Jika sudah mandi dibalur kayu putih"},
+            {id: 75, cls: "2D", name: "MUHAMMAD HIZAM SHAQIL", pak: "13. Pak Sucipto dan Pak Yusuf Supriadi", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Tidak memiliki alergi", allergyDetail: "Tidak ada", condition: "Tidak ada", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak ada", genericMeds: "Ya, diizinkan", message: "Tidak ada"},
+            {id: 76, cls: "2D", name: "RAYYANKA ABISALI ZAMZAMI", pak: "15. Pak Chandra", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "-", genericMeds: "Ya, diizinkan", message: null},
+            {id: 77, cls: "2D", name: "RANIA TAMINAIRA GHANIA SANDY", pak: "2. Bu Asiyah dan Bu Riyanti", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "tidak bisa pedas", genericMeds: "Ya, diizinkan", message: "masih pengobatan amandel dan sinus namun insyaa allah tidak berbahaya"},
+            {id: 78, cls: "2D", name: "IBRAHIM KHOLILURRAHMAN", pak: "13. Pak Sucipto dan Pak Yusuf Supriadi", permission: "Ya, Saya mengizinkan", symptoms: "Demam (Suhu > 37.5°C), Batuk / Pilek", allergy: "Tidak memiliki alergi", allergyDetail: "Tidak ada", condition: "Tidak ada", motionSickness: "Ya (Saya akan memberikan obat sebelum berangkat)", meds: "Tidak ada obat rutin", medToTeacher: "Tidak ada", genericMeds: "Ya, diizinkan", message: "Ibrahim rasa penasaran tinggi, kami titip agar pengawasan lebih ketat. Mudah2 semuanya lancar sehat, selamat dan d ridloi Allaah. Aamiin"},
+            {id: 79, cls: "2C", name: "MUHAMAD DAVIN RYZKEANO YUSUF", pak: "14. Pak Nana", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Tidak memiliki alergi", allergyDetail: null, condition: null, motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: null, genericMeds: "Ya, diizinkan", message: null},
+            {id: 80, cls: "2E", name: "AHMAD HANIF AL FAYYADH", pak: "15. Pak Chandra", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Alergi Debu / Udara Dingin (Asma)", allergyDetail: "Alergi debu Dan dingin. Biasanya kalo kambuh alerginya, Ananda akan batuk2", condition: null, motionSickness: "Ya (Mohon bawa kantong plastik/obat antisipasi dari sekolah)", meds: "Tidak ada obat rutin", medToTeacher: null, genericMeds: "Ya, diizinkan", message: "Ananda suka merasakan pusing saat berkendara jika suasana kendaraan panas Dan berdesakan. Tolong Ingatkan Ananda agar menggunakan minyak kayu putih di dadanya"},
+            {id: 81, cls: "2C", name: "MIKHAYLA QAIRINA PUTERI", pak: "6. Bu Zaitun", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Tidak", meds: "Tidak, saya akan mengaturnya sendiri", medToTeacher: "-", genericMeds: "Ya, diizinkan", message: null},
+            {id: 82, cls: "2E", name: "MUHAMMAD SYAMIL IZZUDDIN EL HAQ", pak: "10. Pak Heri", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Tidak memiliki alergi", allergyDetail: null, condition: null, motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: null, genericMeds: "Ya, diizinkan", message: null},
+            {id: 83, cls: "2C", name: "MUHAMMAD RIZQI ABDURRAHMAN", pak: "9. Pak Ridho dan Pak Abdurrahman", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "-", genericMeds: "Ya, diizinkan", message: "Tidak ada"},
+            {id: 84, cls: "2F", name: "MUHAMMAD HIROSHI ALFATIH", pak: "13. Pak Sucipto dan Pak Yusuf Supriadi", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Alergi Debu / Udara Dingin (Asma)", allergyDetail: "Bersin, pilek, dan gatal2", condition: "Tidak", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak ada", genericMeds: "Ya, diizinkan", message: "Mohon bimbingan dan perhatiannya bagi ananda. Terima kasih sebelumnya."},
+            {id: 85, cls: "2B", name: "LUTHFI DZIKRA MOHAMMAD ATTAQI", pak: "15. Pak Chandra", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Tidak", meds: null, medToTeacher: "-", genericMeds: "Ya, diizinkan", message: null},
+            {id: 86, cls: "2B", name: "SALAHUDDIN AFNAN AL AYYUBI", pak: "12. Pak Widodo", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "-", genericMeds: "Ya, diizinkan", message: "-"},
+            {id: 87, cls: "2B", name: "MUHAMMAD NAZHRIL HAQ EL-EMIIR", pak: "10. Pak Heri", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Alergi Makanan (misal: Kacang, Seafood, Telur), Alergi Debu / Udara Dingin (Asma)", allergyDetail: "Pernah diindikasi alergi susu sapi, dan Broncopneumonia. Pada saat flue berat atau kedinginan kadang sesek nafas", condition: "Tidak ada", motionSickness: "Ya (Mohon bawa kantong plastik/obat antisipasi dari sekolah)", meds: "Tidak ada obat rutin", medToTeacher: "Jangan banyak makan pedas", genericMeds: "Ya, diizinkan", message: null},
+            {id: 88, cls: "2B", name: "MUHAMMAD FAEYZA ATHAFARIZ", pak: "10. Pak Heri", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak pedas", genericMeds: "Ya, diizinkan", message: "Mohon tanyakan ananda mau BAK atau BAB, karena suka ditahan akhirnya jebol. Kalau demam berikan obat tempra (pct)"},
+            {id: 89, cls: "2C", name: "RAZZAN MUHAMMAD UMAIR", pak: "9. Pak Ridho dan Pak Abdurrahman", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Alergi Makanan (misal: Kacang, Seafood, Telur)", allergyDetail: "alergi udang dan cumi lidah gatal ,bibir bengkak", condition: null, motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak", genericMeds: "Ya, diizinkan", message: null},
+            {id: 90, cls: "2F", name: "MAHEZA BINTANG KASTARA ISNADI", pak: "14. Pak Nana", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak makan pedas karena nemang tidak suka pedas", genericMeds: "Ya, diizinkan", message: null},
+            {id: 91, cls: "2A", name: "NABILAH MITSLA NADA", pak: "3. Bu Maya", permission: "Ya, Saya mengizinkan", symptoms: "Demam (Suhu > 37.5°C), Sakit Tenggorokan", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "-", genericMeds: "Ya, diizinkan", message: "-"},
+            {id: 92, cls: "2F", name: "AMIRA HARITS MARTA", pak: "6. Bu Zaitun", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: null, condition: null, motionSickness: null, meds: "Tidak ada obat rutin", medToTeacher: null, genericMeds: "Ya, diizinkan", message: null},
+            {id: 93, cls: "2F", name: "MUHAMMAD ARRAZKA ABIDIN", pak: "14. Pak Nana", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Alergi Debu / Udara Dingin (Asma)", allergyDetail: null, condition: null, motionSickness: "Tidak", meds: "Tidak, saya akan mengaturnya sendiri", medToTeacher: null, genericMeds: "Tidak, harap hubungi saya terlebih dahulu", message: null},
+            {id: 94, cls: "2E", name: "HAIKAL IBRAHIM ALGHIFARI", pak: "10. Pak Heri", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak ada", genericMeds: "Ya, diizinkan", message: "Tolong sering diingatkan untuk minum setelah makan atau kegiatan karna anaknya punya radang amandel"},
+            {id: 95, cls: "2E", name: "KHAIRI FARHANA", pak: "2. Bu Asiyah dan Bu Riyanti", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Lainnya", allergyDetail: "Pernah alergi dingin, badan bentol2", condition: "Tidak ada", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak ada", genericMeds: "Ya, diizinkan", message: null},
+            {id: 96, cls: "2E", name: "SYAFA KAMILA AZZAHRA", pak: "4. Bu Srimel", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "Tidak", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak", genericMeds: "Ya, diizinkan", message: "Tdk ada"},
+            {id: 97, cls: "2B", name: "MUHAMMAD AZIZAN SYABANI IRAWAN", pak: "10. Pak Heri", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: null, condition: null, motionSickness: "Tidak", meds: "Tidak, saya akan mengaturnya sendiri", medToTeacher: "Tidak", genericMeds: "Ya, diizinkan", message: null},
+            {id: 98, cls: "2A", name: "HAMZAH KHALIFA JUNDALLAH", pak: "9. Pak Ridho dan Pak Abdurrahman", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "-", genericMeds: "Ya, diizinkan", message: "-"},
+            {id: 99, cls: "2E", name: "FATHIN LANA MIKAYLA", pak: "7. Bu Elah", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: null, condition: null, motionSickness: "Tidak", meds: "Ya, obat akan saya serahkan ke guru (diberi label nama)", medToTeacher: null, genericMeds: "Ya, diizinkan", message: null},
+            {id: 100, cls: "2E", name: "ARXAVIER KHALIF AFRIZAL", pak: "10. Pak Heri", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "Flu jika terlalu dingin dan debu", condition: "Tidak", motionSickness: "Ya (Saya akan memberikan obat sebelum berangkat)", meds: "Tidak ada obat rutin", medToTeacher: "Tidak ada", genericMeds: "Ya, diizinkan", message: "Mohon dibantu untuk keselamatan dan kesehatan ananda Arxavier"},
+            {id: 101, cls: "2F", name: "HANUM RAMADHANI RIZKI", pak: "8. Bu Lina", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: null, genericMeds: "Ya, diizinkan", message: null},
+            {id: 102, cls: "2F", name: "AULIYA KHAIRUNNISA", pak: "6. Bu Zaitun", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Tidak memiliki alergi", allergyDetail: null, condition: null, motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: null, genericMeds: "Ya, diizinkan", message: null},
+            {id: 103, cls: "2F", name: "MARZIA ARSYLA AZKADINA", pak: "14. Pak Nana", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "Tidak ada alergi", condition: "Tidak", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak", genericMeds: "Ya, diizinkan", message: "Baik"},
+            {id: 104, cls: "2A", name: "SHAWQI RASYA GARNAMA", pak: "13. Pak Sucipto dan Pak Yusuf Supriadi", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "Harud pakai baju yg kering", condition: "Tidak", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak ada", genericMeds: "Ya, diizinkan", message: "Pastikan baju ananda yg dipakai ganti dalam keadaan kering, sama minum tolak angin anak"},
+            {id: 105, cls: "2A", name: "MUHAMMAD ARKHAN ALFATIH", pak: "11. Pak Aris Ismail", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Alergi Debu / Udara Dingin (Asma)", allergyDetail: "Batuk2 terus menerus jika terpapar debu atau dingin", condition: "-", motionSickness: "Tidak", meds: "Tidak, saya akan mengaturnya sendiri", medToTeacher: "-", genericMeds: "Ya, diizinkan", message: "Arkhan akan membawa inhaler, jika alerginya kambuh sehingga nafas berat dan batuk2 tolong ingatkan arkhan untuk menggunakan inhalernya"},
+            {id: 106, cls: "2A", name: "MUHAMMAD SHAQUILLE AL HUSNA", pak: "11. Pak Aris Ismail", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak pedas", genericMeds: "Tidak, harap hubungi saya terlebih dahulu", message: "Dimohon tetap dalam pemantauan guru saat berkegiatan"},
+            {id: 107, cls: "2A", name: "RASHID AL-HAITHAM HIDAYATULLAH", pak: "9. Pak Ridho dan Pak Abdurrahman", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Tidak memiliki alergi", allergyDetail: null, condition: null, motionSickness: "Tidak", meds: "Tidak, saya akan mengaturnya sendiri", medToTeacher: "Tidak boleh coklat/minuman kemasan/permen/chiki karna ada amandel", genericMeds: "Ya, diizinkan", message: "Mohon bantuannya disaat ananda kekamar mandi atau salin pakaian.. Rashid bisa pakai sendiri tapi masih perlu bantuan dan diingatkan untuk mengambilnya baju salinnya dimana.. terimakasih 🙏"},
+            {id: 108, cls: "2A", name: "KIAGUS FAEYZA ALZAHRAWI", pak: "11. Pak Aris Ismail", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "-", genericMeds: "Ya, diizinkan", message: null},
+            {id: 109, cls: "2A", name: "HANIF DANIAR IBRAHIM", pak: "9. Pak Ridho dan Pak Abdurrahman", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "-", genericMeds: "Ya, diizinkan", message: "-"},
+            {id: 110, cls: "2F", name: "NAHLA MIWATTA", pak: "1. Bu Nurul", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "--", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak", genericMeds: "Tidak, harap hubungi saya terlebih dahulu", message: null},
+            {id: 111, cls: "2E", name: "AHMAD HANIF AL FAYYADH", pak: "15. Pak Chandra", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Alergi Debu / Udara Dingin (Asma)", allergyDetail: "Batuk", condition: "Tidak", motionSickness: "Ya (Mohon bawa kantong plastik/obat antisipasi dari sekolah)", meds: "Tidak ada obat rutin", medToTeacher: "Tidak", genericMeds: "Ya, diizinkan", message: null},
+            {id: 112, cls: "2A", name: "ALDEBARAN FATHIR AHMAD", pak: "9. Pak Ridho dan Pak Abdurrahman", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Lainnya", allergyDetail: "Alhamdulillah sehat wal afiat", condition: "Tidak ada", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak ada", genericMeds: "Ya, diizinkan", message: null},
+            {id: 113, cls: "2E", name: "MUHAMMAD FAQIH RIDWAN", pak: "10. Pak Heri", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "Tidak ada", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak ada", genericMeds: "Ya, diizinkan", message: "Apabila demam dikasih minyak telon,batuk dikasih air hangat"},
+            {id: 114, cls: "2A", name: "CAHYA BINAR MENTARI", pak: "1. Bu Nurul", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Ya (Mohon bawa kantong plastik/obat antisipasi dari sekolah)", meds: "Tidak ada obat rutin", medToTeacher: "-", genericMeds: "Ya, diizinkan", message: "-"},
+            {id: 115, cls: "2E", name: "ZEANISA SHABIRA ELGITA", pak: "4. Bu Srimel", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "Tidak ada alergi", condition: "Tidak ada", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak ada", genericMeds: "Tidak, harap hubungi saya terlebih dahulu", message: "Tidak ada"},
+            {id: 116, cls: "2E", name: "ALBARRA LENTERA JUANG GONDEWA", pak: "15. Pak Chandra", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Alergi Debu / Udara Dingin (Asma)", allergyDetail: "Dingin terkadang kaligata, debu mata merah", condition: "Tidak", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak", genericMeds: "Ya, diizinkan", message: null},
+            {id: 117, cls: "2E", name: "MUHAMMAD KAHFI ABIZAR", pak: "12. Pak Widodo", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Lainnya", allergyDetail: "coklat", condition: "asma", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "tidak", genericMeds: "Ya, diizinkan", message: "tolong diingatkan tidak meminum es atau minuman kemasan"},
+            {id: 118, cls: "2A", name: "RAZKA AFIFI", pak: "13. Pak Sucipto dan Pak Yusuf Supriadi", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Alergi Debu / Udara Dingin (Asma)", allergyDetail: "Asma", condition: "Asma", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "-", genericMeds: "Ya, diizinkan", message: null},
+            {id: 119, cls: "2A", name: "ALMEERA ASHADIYA KHAIRUNNISA", pak: "1. Bu Nurul", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: null, condition: null, motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak makan mie", genericMeds: "Ya, diizinkan", message: null},
+            {id: 120, cls: "2E", name: "MUHAMMAD IZZ IBADURRAHMAN AL HANAN", pak: "12. Pak Widodo", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: null, condition: null, motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: null, genericMeds: "Tidak, harap hubungi saya terlebih dahulu", message: null},
+            {id: 121, cls: "2E", name: "DELISHA NURADI", pak: "7. Bu Elah", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Tidak memiliki alergi", allergyDetail: null, condition: null, motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: null, genericMeds: "Ya, diizinkan", message: null},
+            {id: 122, cls: "2A", name: "AYRA ALZAHSY ZEANISSA", pak: "1. Bu Nurul", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "Tidak", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak", genericMeds: "Ya, diizinkan", message: "Tidak"},
+            {id: 123, cls: "2E", name: "NADHIRA ASHLEY MISEL", pak: "2. Bu Asiyah dan Bu Riyanti", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "-", genericMeds: "Tidak, harap hubungi saya terlebih dahulu", message: null},
+            {id: 124, cls: "2A", name: "DYARA SHANUM MADINA", pak: "1. Bu Nurul", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Alergi Debu / Udara Dingin (Asma)", allergyDetail: "Bersin bersin", condition: "Tidak", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak boleh makan telat", genericMeds: "Ya, diizinkan", message: "Tolong perhatikan saat anak makan siangya Ibu kondisi capek takut masuk angin. Dan tolong perhatikan saat ganti baju takut kelamaan basah sakit. Dan cuci tangan sebelum makan siang atau snack"},
+            {id: 125, cls: "2E", name: "ALISHA ANINDITA AZZAHRA", pak: "7. Bu Elah", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "Tidak ada", motionSickness: "Ya (Saya akan memberikan obat sebelum berangkat)", meds: "Tidak ada obat rutin", medToTeacher: "Tidak suka makanan pedas", genericMeds: "Ya, diizinkan", message: "Mohon diingatkan untuk makanannya dihabiskan, terimakasih"},
+            {id: 126, cls: "2F", name: "MUHAMMAD AMAR SAYYIDUROHMAN", pak: "14. Pak Nana", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Lainnya", allergyDetail: "-", condition: null, motionSickness: "Ya (Saya akan memberikan obat sebelum berangkat)", meds: "Tidak ada obat rutin", medToTeacher: null, genericMeds: "Tidak, harap hubungi saya terlebih dahulu", message: "Ustadz afwan Titip Ananda amar terkadang suka pusing dan mual di mobil,, antisipasi saja sudah dibekali kayu putih di tas Ananda,, Syukron ustadz"},
+            {id: 127, cls: "2B", name: "MUHAMMAD GHAZI FATHAN YULIS", pak: "10. Pak Heri", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Alergi Makanan (misal: Kacang, Seafood, Telur)", allergyDetail: "Alergi debu, strowbery, sea foot tertentu", condition: "Asma", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak", genericMeds: "Ya, diizinkan", message: null},
+            {id: 128, cls: "2B", name: "AISYAH TAQIYYA AZ ZAHRA", pak: "5. Bu Iin", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: null, motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: null, genericMeds: "Ya, diizinkan", message: null},
+            {id: 129, cls: "2A", name: "MIKHAYLA ALMAHYRA MISSHAL AFIF", pak: "3. Bu Maya", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "Tidak ada", condition: "Tidak ada", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak ada", genericMeds: "Ya, diizinkan", message: "Semoga sehat selalu aamiin"},
+            {id: 130, cls: "2A", name: "SHEZA ARARINDA ADAIR", pak: "5. Bu Iin", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Ya (Mohon bawa kantong plastik/obat antisipasi dari sekolah)", meds: "Tidak ada obat rutin", medToTeacher: "-", genericMeds: "Ya, diizinkan", message: null},
+            {id: 131, cls: "2E", name: "ARETHA QIRANI UBAIDILLAH", pak: "7. Bu Elah", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek, Diare / Muntah", allergy: "Alergi Makanan (misal: Kacang, Seafood, Telur), Alergi Debu / Udara Dingin (Asma)", allergyDetail: "Kepiting, kerang2an, tungau debu dan asma", condition: "Tidak", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Es", genericMeds: "Ya, diizinkan", message: null},
+            {id: 132, cls: "2B", name: "AULIA NURUL PAZRIAH", pak: "6. Bu Zaitun", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: null, condition: null, motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: null, genericMeds: "Ya, diizinkan", message: "Mohon di ingatkan untuk pipi bu soalnya sk kebelet dan di tahan"},
+            {id: 133, cls: "2D", name: "FILLEA CANAN QAIREEN", pak: "2. Bu Asiyah dan Bu Riyanti", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Alergi Debu / Udara Dingin (Asma)", allergyDetail: "-", condition: "-", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "TIDAK MAKAN PEDAS", genericMeds: "Ya, diizinkan", message: null},
+            {id: 134, cls: "2B", name: "MUHAMMAD ABYAN BYAKTA", pak: "15. Pak Chandra", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Alergi Makanan (misal: Kacang, Seafood, Telur), Lainnya", allergyDetail: "Alergi kedelai dan olahannya, pastikan tidak ada kandungan soy. Stroberi, kucing.", condition: "Tidak ada", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "_", genericMeds: "Ya, diizinkan", message: "Perhatikan abyan, anak sangat energik"},
+            {id: 135, cls: "2F", name: "OMAR DANISH PUTRA UTAMA", pak: "13. Pak Sucipto dan Pak Yusuf Supriadi", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "-", genericMeds: "Tidak, harap hubungi saya terlebih dahulu", message: "Mohon diperhatikan dengan benar terkait keselamatan serta kesehatan ananda di lokasi baru (lokasi visiting), karna anak tidak dlm pengawasan orgtua."},
+            {id: 136, cls: "2F", name: "MUHAMMAD ZAIDAN MUBARAK", pak: "13. Pak Sucipto dan Pak Yusuf Supriadi", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: null, condition: null, motionSickness: "Ya (Mohon bawa kantong plastik/obat antisipasi dari sekolah)", meds: "Tidak ada obat rutin", medToTeacher: null, genericMeds: "Ya, diizinkan", message: null},
+            {id: 137, cls: "2B", name: "SITI SYARIFAH MUDAIM", pak: "2. Bu Asiyah dan Bu Riyanti", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: null, condition: null, motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak", genericMeds: "Ya, diizinkan", message: null},
+            {id: 138, cls: "2B", name: "ABDUL AKRAM AL HAFIZH", pak: "15. Pak Chandra", permission: "Ya, Saya mengizinkan", symptoms: "Demam (Suhu > 37.5°C), Batuk / Pilek", allergy: "Alergi Debu / Udara Dingin (Asma), Lainnya", allergyDetail: "Gatal kulit dan batuk", condition: "-", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "Tidak ada", genericMeds: "Ya, diizinkan", message: "-"},
+            {id: 139, cls: "2B", name: "MUHAMMAD ZHAKI AL FATIH", pak: "12. Pak Widodo", permission: "Ya, Saya mengizinkan", symptoms: "Batuk / Pilek", allergy: "Tidak memiliki alergi", allergyDetail: null, condition: null, motionSickness: "Ya (Mohon bawa kantong plastik/obat antisipasi dari sekolah)", meds: "Tidak ada obat rutin", medToTeacher: "Tidak", genericMeds: "Ya, diizinkan", message: null},
+            {id: 140, cls: "2B", name: "NANDYA ADNY PRAMESWARI", pak: "7. Bu Elah", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: null, condition: null, motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: null, genericMeds: "Ya, diizinkan", message: null},
+            {id: 141, cls: "2A", name: "KANESTRI HAYU NIRWASITA", pak: "3. Bu Maya", permission: "Ya, Saya mengizinkan", symptoms: "Tidak ada gejala apapun", allergy: "Tidak memiliki alergi", allergyDetail: "-", condition: "-", motionSickness: "Tidak", meds: "Tidak ada obat rutin", medToTeacher: "-", genericMeds: "Ya, diizinkan", message: "-"}
+        ];
+
+        // --- STATE MANAGEMENT ---
+        let currentFilter = 'ALL';
+        let searchTerm = '';
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            populatePakFilter();
+            renderTable();
+            updateStats();
+        });
+
+        // --- CORE FUNCTIONS ---
+
+        function populatePakFilter() {
+            const pakSelect = document.getElementById('pakFilter');
+            // Extract unique PAK names
+            const pakSet = new Set(rawData.map(item => item.pak));
+            const sortedPaks = Array.from(pakSet).sort();
+
+            sortedPaks.forEach(pak => {
+                const option = document.createElement('option');
+                option.value = pak;
+                option.textContent = pak;
+                pakSelect.appendChild(option);
+            });
+        }
+
+        function handleFilter() {
+            currentFilter = document.getElementById('pakFilter').value;
+            renderTable();
+            updateStats();
+        }
+
+        function handleSearch() {
+            searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            renderTable();
+        }
+
+        function getFilteredData() {
+            return rawData.filter(student => {
+                // Filter by PAK
+                const matchesFilter = currentFilter === 'ALL' || student.pak === currentFilter;
+                
+                // Filter by Search
+                const matchesSearch = student.name.toLowerCase().includes(searchTerm) || 
+                                      student.cls.toLowerCase().includes(searchTerm);
+
+                return matchesFilter && matchesSearch;
+            });
+        }
+
+        function renderTable() {
+            const tableBody = document.getElementById('studentTableBody');
+            const data = getFilteredData();
+            
+            tableBody.innerHTML = '';
+            document.getElementById('showingCount').textContent = data.length;
+
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 2rem; color: #64748b;">Data tidak ditemukan</td></tr>';
+                return;
+            }
+
+            data.forEach(student => {
+                const tr = document.createElement('tr');
+                
+                // Determine Status Badges
+                const permStatus = student.permission.toLowerCase().includes('ya') ? 'badge-success' : 'badge-danger';
+                const permText = student.permission.split('(')[0].trim(); // Get first part before parenthesis if any
+                
+                const sympStatus = student.symptoms.toLowerCase().includes('tidak ada') ? 'badge-gray' : 'badge-warning';
+
+                tr.innerHTML = `
+                    <td><span class="badge badge-info">${student.cls}</span></td>
+                    <td style="font-weight: 500;">${student.name}</td>
+                    <td style="font-size: 0.85rem; color: var(--text-light);">${student.pak}</td>
+                    <td><span class="badge ${permStatus}">${permText}</span></td>
+                    <td><span class="badge ${sympStatus}">${student.symptoms}</span></td>
+                    <td>${student.allergy}</td>
+                    <td>${student.condition || '-'}</td>
+                    <td>
+                        <button class="btn btn-outline" onclick="openModal(${student.id})">
+                            Lihat Detail
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        function updateStats() {
+            const data = getFilteredData();
+            
+            const total = data.length;
+            const allowed = data.filter(d => d.permission.toLowerCase().includes('ya')).length;
+            const denied = total - allowed;
+            const sick = data.filter(d => !d.symptoms.toLowerCase().includes('tidak ada')).length;
+
+            animateValue("statTotal", parseInt(document.getElementById("statTotal").innerText), total, 500);
+            animateValue("statAllowed", parseInt(document.getElementById("statAllowed").innerText), allowed, 500);
+            animateValue("statDenied", parseInt(document.getElementById("statDenied").innerText), denied, 500);
+            animateValue("statSick", parseInt(document.getElementById("statSick").innerText), sick, 500);
+        }
+
+        function animateValue(id, start, end, duration) {
+            if (start === end) return;
+            const range = end - start;
+            let current = start;
+            const increment = end > start ? 1 : -1;
+            const stepTime = Math.abs(Math.floor(duration / range));
+            const obj = document.getElementById(id);
+            const timer = setInterval(function() {
+                current += increment;
+                obj.innerHTML = current;
+                if (current == end) {
+                    clearInterval(timer);
+                }
+            }, stepTime);
+        }
+
+        // --- MODAL LOGIC ---
+        function openModal(id) {
+            const student = rawData.find(s => s.id === id);
+            if (!student) return;
+
+            document.getElementById('modalTitle').textContent = `Detail: ${student.name} (${student.cls})`;
+            
+            const isAllowed = student.permission.toLowerCase().includes('ya');
+            const isSick = !student.symptoms.toLowerCase().includes('tidak ada');
+            const hasAllergy = !student.allergy.toLowerCase().includes('tidak');
+
+            let alertsHtml = '';
+            
+            if (!isAllowed) {
+                alertsHtml += `<div class="alert-box alert-danger"><strong>⚠️ Tidak Diizinkan:</strong> ${student.permission}</div>`;
+            }
+            if (isSick) {
+                alertsHtml += `<div class="alert-box alert-warning"><strong>🤒 Gejala:</strong> ${student.symptoms}</div>`;
+            }
+            if (hasAllergy) {
+                alertsHtml += `<div class="alert-box alert-warning"><strong>🚫 Alergi:</strong> ${student.allergyDetail || student.allergy}</div>`;
+            }
+
+            const content = `
+                ${alertsHtml}
+                
+                <div class="detail-group">
+                    <div class="detail-label">Guru PAK</div>
+                    <div class="detail-value">${student.pak}</div>
+                </div>
+
+                <div class="detail-group">
+                    <div class="detail-label">Riwayat Kesehatan & Kondisi</div>
+                    <div class="detail-value ${student.condition ? '' : 'empty'}">
+                        ${student.condition || '-'}
+                    </div>
+                </div>
+
+                <div class="detail-group">
+                    <div class="detail-label">Mabuk Perjalanan</div>
+                    <div class="detail-value ${student.motionSickness && student.motionSickness.toLowerCase() !== 'tidak' ? '' : 'empty'}">
+                        ${student.motionSickness || '-'}
+                    </div>
+                </div>
+
+                <div class="detail-group">
+                    <div class="detail-label">Pantangan Makanan (Selain Alergi)</div>
+                    <div class="detail-value ${student.medToTeacher ? '' : 'empty'}">
+                        ${student.medToTeacher || '-'}
+                    </div>
+                </div>
+
+                <div class="detail-group">
+                    <div class="detail-label">Obat Rutin</div>
+                    <div class="detail-value">${student.meds}</div>
+                </div>
+
+                <div class="detail-group">
+                    <div class="detail-label">Izin Pemberian Obat Generik (Paracetamol)</div>
+                    <div class="detail-value">${student.genericMeds}</div>
+                </div>
+
+                <div class="detail-group">
+                    <div class="detail-label">Pesan Khusus Orang Tua</div>
+                    <div class="detail-value ${student.message ? '' : 'empty'}">
+                        ${student.message || 'Tidak ada pesan.'}
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('modalContent').innerHTML = content;
+            document.getElementById('detailModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').classList.remove('active');
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('detailModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
